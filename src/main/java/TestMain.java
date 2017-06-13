@@ -4,12 +4,8 @@ import sprouts.annotation.GetInstance;
 
 import java.lang.reflect.AnnotatedElement;
 
-public class TestMain
-{
+public class TestMain {
     String lol;
-
-    @GetInstance
-    @BindWith(className = "sprouts.support.FakeAnnotate")
     AnnotatedElement annotate;
 
     @GetInstance
@@ -17,8 +13,7 @@ public class TestMain
         this.lol = lol;
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         System.out.print("ciao static main\n");
         Sprouts sprouts = new Sprouts(null);
         TestMain test = (TestMain) sprouts.getNewInstance(TestMain.class);
@@ -27,5 +22,10 @@ public class TestMain
 
     public void entry() {
         System.out.print(annotate.toString());
+    }
+
+    @GetInstance
+    private void injectMe(@BindWith(className = "sprouts.support.FakeAnnotate") AnnotatedElement element) {
+        this.annotate = element;
     }
 }

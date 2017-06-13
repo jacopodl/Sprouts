@@ -47,6 +47,7 @@ public class Sprouts {
 
     public Sprouts(Settings settings) {
         this.savedInstance = new HashMap<>();
+        this.savedInstance.put(this.getClass().getCanonicalName(), this);
         this.settings = settings;
         if (settings != null)
             settings.configure();
@@ -61,6 +62,7 @@ public class Sprouts {
         // STEP 2
         fieldInjector(obj, clazz);
         // STEP 3
+        methodInjector(obj, clazz);
         // METHOD
 
         return obj;
@@ -91,7 +93,7 @@ public class Sprouts {
         boolean isPrivate;
         int idx = 0;
 
-        for (Constructor<?> constructor : clazz.getConstructors()) {
+        for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
             if (newInstance != null)
                 throw new SproutsMultipleConstructors(clazz);
 
@@ -115,6 +117,25 @@ public class Sprouts {
         stdConstructor.setAccessible(isPrivate);
 
         return newInstance;
+    }
+
+    private void methodInjector(Object obj, Class clazz) throws Exception {
+        Object[] instancedParam;
+        boolean isPrivate;
+        int idx = 0;
+
+        for (Method method : clazz.getDeclaredMethods()) {
+            if (method.isAnnotationPresent(GetInstance.class)) {
+                instancedParam = new Object[method.getParameterCount()];
+                isPrivate = method.isAccessible();
+                method.setAccessible(true);
+                for (Parameter param : method.getParameters())
+                    instancedParam[idx++] = objectBuilder(param.getType(), param);
+                method.invoke(obj, instancedParam);
+                method.setAccessible(isPrivate);
+                idx = 0;
+            }
+        }
     }
 
     private String getQualifier(Class clazz, BindWith bw) {
