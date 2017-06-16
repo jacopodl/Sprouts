@@ -27,11 +27,17 @@ package sprouts.settings;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class Settings {
+public abstract class SproutsSettings {
+    protected boolean allowPrivateField;
+    protected boolean allowPrivateConstructor;
+    protected boolean allowPrivateMethod;
     private Map<String, ProviderInfo> providerMap;
 
-    public Settings() {
+    public SproutsSettings() {
         this.providerMap = new HashMap<>();
+        this.allowPrivateField = false;
+        this.allowPrivateConstructor = false;
+        this.allowPrivateMethod = false;
     }
 
     public ProviderInfo getMapping(Class base) {
@@ -43,6 +49,19 @@ public abstract class Settings {
         this.providerMap.put(clazz.getName(), pInfo);
         return pInfo;
     }
+
+    public boolean getAllowPrivateField() {
+        return this.allowPrivateField;
+    }
+
+    public boolean getAllowPrivateConstructor() {
+        return this.allowPrivateConstructor;
+    }
+
+    public boolean getAllowPrivateMethod() {
+        return this.allowPrivateMethod;
+    }
+
 
     public abstract void configure();
 }

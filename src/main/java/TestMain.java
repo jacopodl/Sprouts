@@ -1,6 +1,7 @@
 import sprouts.Sprouts;
-import sprouts.annotation.BindWith;
 import sprouts.annotation.GetInstance;
+import sprouts.settings.SproutsSettings;
+import sprouts.support.FakeAnnotate;
 
 import java.lang.reflect.AnnotatedElement;
 
@@ -15,7 +16,13 @@ public class TestMain {
 
     public static void main(String[] args) {
         System.out.print("ciao static main\n");
-        Sprouts sprouts = new Sprouts(null);
+        Sprouts sprouts = new Sprouts(new SproutsSettings() {
+            @Override
+            public void configure() {
+                bind(AnnotatedElement.class).to(FakeAnnotate.class);
+                allowPrivateMethod = true;
+            }
+        });
         TestMain test = (TestMain) sprouts.getNewInstance(TestMain.class);
         test.entry();
     }
@@ -25,7 +32,7 @@ public class TestMain {
     }
 
     @GetInstance
-    private void injectMe(@BindWith(className = "sprouts.support.FakeAnnotate") AnnotatedElement element) {
+    public void injectMe(AnnotatedElement element) {
         this.annotate = element;
     }
 }

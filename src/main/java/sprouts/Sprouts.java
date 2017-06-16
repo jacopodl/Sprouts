@@ -27,9 +27,13 @@ package sprouts;
 import sprouts.annotation.BindWith;
 import sprouts.annotation.GetInstance;
 import sprouts.annotation.New;
+import sprouts.exceptions.SproutsAccessViolation;
+import sprouts.exceptions.SproutsClassNotFound;
+import sprouts.exceptions.SproutsInvalidClassType;
 import sprouts.exceptions.SproutsMultipleConstructors;
-import sprouts.settings.Settings;
+import sprouts.settings.DefaultSproutsSettings;
 import sprouts.settings.ProviderInfo;
+import sprouts.settings.SproutsSettings;
 import sprouts.support.FakeAnnotate;
 
 import java.lang.annotation.Annotation;
@@ -38,104 +42,124 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Sprouts {
-    private Settings settings;
+    private SproutsSettings settings;
     private Map<String, Object> savedInstance;
 
     public Sprouts() {
-        this(null);
+        this(new DefaultSproutsSettings());
     }
 
-    public Sprouts(Settings settings) {
+    public Sprouts(SproutsSettings settings) {
         this.savedInstance = new HashMap<>();
         this.savedInstance.put(this.getClass().getCanonicalName(), this);
         this.settings = settings;
-        if (settings != null)
-            settings.configure();
+        this.settings.configure();
     }
 
-
-    private Object objectBuilder(Class clazz) throws Exception {
-        Object obj;
-
-        // STEP 1
-        obj = constructorInjector(clazz);
-        // STEP 2
-        fieldInjector(obj, clazz);
-        // STEP 3
-        methodInjector(obj, clazz);
-        // METHOD
-
-        return obj;
+    private Class loadClass(String className) {
+        try {
+            return ClassLoader.getSystemClassLoader().loadClass(className);
+        } catch (ClassNotFoundException e) {
+            throw new SproutsClassNotFound(className);
+        }
     }
 
-    private Object objectBuilder(Class clazz, AnnotatedElement ae) throws Exception {
+    private Object objectBuilder(Class clazz, AnnotatedElement ae) {
         Class iClass;
         Object obj;
         boolean newInstance = ae.isAnnotationPresent(New.class);
 
-        iClass = ClassLoader.getSystemClassLoader().loadClass(getQualifier(clazz, ae.getAnnotation(BindWith.class)));
+        iClass = loadClass(getQualifier(clazz, ae.getAnnotation(BindWith.class)));
 
         if (!newInstance && this.savedInstance.containsKey(iClass.getCanonicalName()))
             return this.savedInstance.get(iClass.getCanonicalName());
 
-        if (newInstance)
-            return objectBuilder(iClass);
+        // BUILD OBJECT
+        // STEP 1
+        obj = constructorInjector(iClass);
 
-        obj = objectBuilder(iClass);
+        // STEP 2
+        fieldInjector(obj, iClass);
+
+        // STEP 3
+        methodInjector(obj, iClass);
+
+        if (newInstance)
+            return obj;
+
         this.savedInstance.put(iClass.getCanonicalName(), obj);
         return obj;
     }
 
     @SuppressWarnings(value = "unchecked")
-    private Object constructorInjector(Class clazz) throws Exception {
+    private Object constructorInjector(Class clazz) {
         Object[] instancedParam;
         Object newInstance = null;
-        boolean isPrivate;
+        boolean isAccessible;
         int idx = 0;
 
-        for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
-            if (newInstance != null)
-                throw new SproutsMultipleConstructors(clazz);
+        if (Modifier.isAbstract(clazz.getModifiers()) || Modifier.isInterface(clazz.getModifiers()))
+            throw new SproutsInvalidClassType(clazz);
 
-            if (constructor.isAnnotationPresent(GetInstance.class)) {
-                instancedParam = new Object[constructor.getParameterCount()];
-                isPrivate = constructor.isAccessible();
-                for (Parameter param : constructor.getParameters())
-                    instancedParam[idx++] = objectBuilder(param.getType(), param);
-                newInstance = constructor.newInstance(instancedParam);
-                constructor.setAccessible(isPrivate);
+        try {
+            for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
+                if (newInstance != null)
+                    throw new SproutsMultipleConstructors(clazz);
+
+                if (constructor.isAnnotationPresent(GetInstance.class)) {
+                    if (disallowInject(constructor, this.settings.getAllowPrivateConstructor()))
+                        throw new SproutsAccessViolation(clazz, constructor);
+                    instancedParam = new Object[constructor.getParameterCount()];
+                    isAccessible = constructor.isAccessible();
+                    for (Parameter param : constructor.getParameters())
+                        instancedParam[idx++] = objectBuilder(param.getType(), param);
+                    newInstance = constructor.newInstance(instancedParam);
+                    constructor.setAccessible(isAccessible);
+                }
             }
+
+            if (newInstance != null)
+                return newInstance;
+
+            Constructor<?> stdConstructor = clazz.getDeclaredConstructor();
+            isAccessible = stdConstructor.isAccessible();
+            stdConstructor.setAccessible(true);
+            newInstance = stdConstructor.newInstance();
+            stdConstructor.setAccessible(isAccessible);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
+            e.printStackTrace();
         }
-
-        if (newInstance != null)
-            return newInstance;
-
-        Constructor<?> stdConstructor = clazz.getDeclaredConstructor();
-        isPrivate = stdConstructor.isAccessible();
-        stdConstructor.setAccessible(true);
-        newInstance = stdConstructor.newInstance();
-        stdConstructor.setAccessible(isPrivate);
 
         return newInstance;
     }
 
-    private void methodInjector(Object obj, Class clazz) throws Exception {
+    private void methodInjector(Object obj, Class clazz) {
         Object[] instancedParam;
-        boolean isPrivate;
+        boolean isAccessible;
         int idx = 0;
 
         for (Method method : clazz.getDeclaredMethods()) {
             if (method.isAnnotationPresent(GetInstance.class)) {
+                if (disallowInject(method, this.settings.getAllowPrivateMethod()))
+                    throw new SproutsAccessViolation(clazz, method);
                 instancedParam = new Object[method.getParameterCount()];
-                isPrivate = method.isAccessible();
+                isAccessible = method.isAccessible();
                 method.setAccessible(true);
                 for (Parameter param : method.getParameters())
                     instancedParam[idx++] = objectBuilder(param.getType(), param);
-                method.invoke(obj, instancedParam);
-                method.setAccessible(isPrivate);
+                try {
+                    method.invoke(obj, instancedParam);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+                method.setAccessible(isAccessible);
                 idx = 0;
             }
         }
+    }
+
+    private boolean disallowInject(Member member, boolean permission) {
+        return (Modifier.isPrivate(member.getModifiers()) || Modifier.isProtected(member.getModifiers())) && !permission;
     }
 
     private String getQualifier(Class clazz, BindWith bw) {
@@ -156,41 +180,44 @@ public class Sprouts {
         return bw.className();
     }
 
-    private void fieldInjector(Object obj, Class clazz) throws Exception {
+    private void fieldInjector(Object obj, Class clazz) {
         Object toInject = obj;
-        boolean isPrivate;
+        boolean isAccessible;
 
         for (Field field : clazz.getDeclaredFields()) {
             if (field.isAnnotationPresent(GetInstance.class)) {
-                isPrivate = field.isAccessible();
+                if (disallowInject(field, this.settings.getAllowPrivateField()))
+                    throw new SproutsAccessViolation(clazz, field);
+                isAccessible = field.isAccessible();
                 field.setAccessible(true);
                 if (!field.getType().equals(clazz))
                     toInject = objectBuilder(field.getType(), field);
-                field.set(obj, toInject);
-                field.setAccessible(isPrivate);
+                try {
+                    field.set(obj, toInject);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                field.setAccessible(isAccessible);
             }
         }
     }
 
     private Object getInstance(Class clazz, boolean getNew) {
-        Object obj = null;
+        Object obj;
         FakeAnnotate annotate;
 
-        try {
-            annotate = new FakeAnnotate();
-            if (getNew) {
-                annotate.addAnnotation(new New() {
+        annotate = new FakeAnnotate();
+        if (getNew) {
+            annotate.addAnnotation(new New() {
 
-                    @Override
-                    public Class<? extends Annotation> annotationType() {
-                        return New.class;
-                    }
-                });
-            }
-            obj = clazz.cast(objectBuilder(clazz, annotate));
-        } catch (Exception e) {
-            e.printStackTrace();
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return New.class;
+                }
+            });
         }
+        obj = clazz.cast(objectBuilder(clazz, annotate));
+
         return obj;
     }
 
