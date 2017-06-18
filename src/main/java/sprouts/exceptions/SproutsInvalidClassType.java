@@ -4,17 +4,11 @@ import java.lang.reflect.Modifier;
 
 public class SproutsInvalidClassType extends RuntimeException {
     public SproutsInvalidClassType(Class clazz) {
-        super(new BuildInfo(clazz).getErrorMsg());
+        super(new BuildInfo().getErrorMsg(clazz));
     }
 
     private static class BuildInfo {
-        private Class clazz;
-
-        private BuildInfo(Class clazz) {
-            this.clazz = clazz;
-        }
-
-        private String getErrorMsg() {
+        private String getErrorMsg(Class clazz) {
             String type = "";
 
             if (Modifier.isAbstract(clazz.getModifiers()))
@@ -22,7 +16,7 @@ public class SproutsInvalidClassType extends RuntimeException {
             else if (Modifier.isInterface(clazz.getModifiers()))
                 type = "interface";
 
-            return "Unable to build object from class " + clazz.getCanonicalName() + " because this class is " + type + ". Use @BindWith!";
+            return String.format("Unable to build object from class %s because this class is %s.", clazz.getCanonicalName(), type);
         }
     }
 }

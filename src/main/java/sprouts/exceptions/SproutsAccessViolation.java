@@ -1,25 +1,14 @@
 package sprouts.exceptions;
 
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 
 public class SproutsAccessViolation extends RuntimeException {
     public SproutsAccessViolation(Class clazz, AccessibleObject aobj) {
-        super(new BuildInfo(clazz, aobj).getErrorMsg());
+        super(new BuildInfo().getErrorMsg(clazz, aobj));
     }
 
     private static class BuildInfo {
-        private Class clazz;
-        private AccessibleObject aobj;
-
-        private BuildInfo(Class clazz, AccessibleObject aobj) {
-            this.clazz = clazz;
-            this.aobj = aobj;
-        }
-
-        private String getErrorMsg() {
+        private String getErrorMsg(Class clazz, AccessibleObject aobj) {
             String type;
 
             if (aobj instanceof Field)
@@ -29,7 +18,17 @@ public class SproutsAccessViolation extends RuntimeException {
             else
                 type = String.format("method(%s)", ((Method) aobj).getName());
 
-            return "Unable to inject dependency into " + type + " in class " + this.clazz.getCanonicalName();
+            return String.format("Unable to inject dependency into %s %s in class %s", getModifier(aobj), type, clazz.getCanonicalName());
+        }
+
+        private String getModifier(AccessibleObject aobj) {
+            Member member = (Member) aobj;
+
+            if (Modifier.isPrivate(member.getModifiers()))
+                return "private";
+            else if (Modifier.isProtected(member.getModifiers()))
+                return "protected";
+            return "";
         }
     }
 }
