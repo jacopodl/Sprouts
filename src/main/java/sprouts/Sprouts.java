@@ -27,10 +27,7 @@ package sprouts;
 import sprouts.annotation.BindWith;
 import sprouts.annotation.GetInstance;
 import sprouts.annotation.New;
-import sprouts.exceptions.SproutsAccessViolation;
-import sprouts.exceptions.SproutsClassNotFound;
-import sprouts.exceptions.SproutsInvalidClassType;
-import sprouts.exceptions.SproutsMultipleConstructors;
+import sprouts.exceptions.*;
 import sprouts.settings.DefaultSproutsSettings;
 import sprouts.settings.ProviderInfo;
 import sprouts.settings.SproutsSettings;
@@ -64,6 +61,7 @@ public class Sprouts {
         }
     }
 
+    @SuppressWarnings(value = "unchecked")
     private Object objectBuilder(Class clazz, AnnotatedElement ae) {
         Class iClass;
         Object obj;
@@ -71,10 +69,12 @@ public class Sprouts {
 
         iClass = loadClass(getQualifier(clazz, ae.getAnnotation(BindWith.class)));
 
+        if (!clazz.isAssignableFrom(iClass))
+            throw new SproutsAssignationError(clazz, iClass);
+
         if (!newInstance && this.savedInstance.containsKey(iClass.getCanonicalName()))
             return this.savedInstance.get(iClass.getCanonicalName());
 
-        // BUILD OBJECT
         // STEP 1
         obj = constructorInjector(iClass);
 
