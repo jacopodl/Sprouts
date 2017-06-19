@@ -29,8 +29,23 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/***
+ * Specify the object which are used for binding.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 public @interface BindWith {
+    /***
+     * Specify class name.
+     * <br>
+     * <br>
+     * Eg:
+     * <br>
+     * &#64;GetInstance
+     * <br>
+     * &#64;BindWith(className="LambdaSensor")
+     * <br>
+     * private GenericSensor sensor;
+     */
     String className();
 }
