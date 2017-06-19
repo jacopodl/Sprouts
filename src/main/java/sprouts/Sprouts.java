@@ -72,8 +72,12 @@ public class Sprouts {
         if (!clazz.isAssignableFrom(iClass))
             throw new SproutsAssignationError(clazz, iClass);
 
-        if (!newInstance && this.savedInstance.containsKey(iClass.getCanonicalName()))
-            return this.savedInstance.get(iClass.getCanonicalName());
+        if (!newInstance) {
+            synchronized (this) {
+                if (this.savedInstance.containsKey(iClass.getCanonicalName()))
+                    return this.savedInstance.get(iClass.getCanonicalName());
+            }
+        }
 
         // STEP 1
         obj = constructorInjector(iClass);
@@ -87,7 +91,9 @@ public class Sprouts {
         if (newInstance)
             return obj;
 
-        this.savedInstance.put(iClass.getCanonicalName(), obj);
+        synchronized (this) {
+            this.savedInstance.put(iClass.getCanonicalName(), obj);
+        }
         return obj;
     }
 
