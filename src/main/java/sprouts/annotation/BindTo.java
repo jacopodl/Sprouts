@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.PARAMETER})
-public @interface BindWith {
+public @interface BindTo {
     /***
      * Specify class name.
      * <br>
@@ -43,7 +43,7 @@ public @interface BindWith {
      * <br>
      * &#64;GetInstance
      * <br>
-     * &#64;BindWith(className="LambdaSensor")
+     * &#64;BindTo(className="LambdaSensor")
      * <br>
      * private GenericSensor sensor;
      */

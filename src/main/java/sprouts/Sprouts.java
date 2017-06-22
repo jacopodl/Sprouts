@@ -24,7 +24,7 @@
 
 package sprouts;
 
-import sprouts.annotation.BindWith;
+import sprouts.annotation.BindTo;
 import sprouts.annotation.GetInstance;
 import sprouts.annotation.New;
 import sprouts.exceptions.*;
@@ -67,7 +67,7 @@ public class Sprouts {
         Object obj;
         boolean newInstance = ae.isAnnotationPresent(New.class);
 
-        iClass = loadClass(getQualifier(clazz, ae.getAnnotation(BindWith.class)));
+        iClass = loadClass(getQualifier(clazz, ae.getAnnotation(BindTo.class)));
 
         if (!clazz.isAssignableFrom(iClass))
             throw new SproutsAssignationError(clazz, iClass);
@@ -168,7 +168,7 @@ public class Sprouts {
         return (Modifier.isPrivate(member.getModifiers()) || Modifier.isProtected(member.getModifiers())) && !permission;
     }
 
-    private String getQualifier(Class clazz, BindWith bw) {
+    private String getQualifier(Class clazz, BindTo bw) {
         ProviderInfo info = null;
 
         if (this.settings != null)
