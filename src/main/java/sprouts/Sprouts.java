@@ -25,6 +25,7 @@
 package sprouts;
 
 import sprouts.annotation.BindTo;
+import sprouts.annotation.Exposed;
 import sprouts.annotation.GetInstance;
 import sprouts.annotation.New;
 import sprouts.exceptions.*;
@@ -164,8 +165,9 @@ public class Sprouts {
         }
     }
 
-    private boolean disallowInject(Member member, boolean permission) {
-        return (Modifier.isPrivate(member.getModifiers()) || Modifier.isProtected(member.getModifiers())) && !permission;
+    private boolean disallowInject(AccessibleObject aobj, boolean permission) {
+        Member member = (Member) aobj;
+        return !aobj.isAnnotationPresent(Exposed.class) && ((Modifier.isPrivate(member.getModifiers()) || Modifier.isProtected(member.getModifiers())) && !permission);
     }
 
     private String getQualifier(Class clazz, BindTo bw) {
