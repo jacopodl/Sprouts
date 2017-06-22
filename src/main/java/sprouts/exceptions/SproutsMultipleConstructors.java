@@ -24,6 +24,9 @@
 
 package sprouts.exceptions;
 
+/***
+ * This exception is thrown by injector when found multiple constructors marked with &#64;GetInstance.
+ */
 public class SproutsMultipleConstructors extends RuntimeException {
     public SproutsMultipleConstructors(Class clazz) {
         super("Multiple constructors annotated with @GetInstance in class: " + clazz.getCanonicalName());

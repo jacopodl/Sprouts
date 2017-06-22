@@ -26,6 +26,9 @@ package sprouts.exceptions;
 
 import java.lang.reflect.*;
 
+/***
+ * This exception is thrown by injector to indicate access violation when trying to inject private/protected field/method or constructor.
+ */
 public class SproutsAccessViolation extends RuntimeException {
     public SproutsAccessViolation(Class clazz, AccessibleObject aobj) {
         super(new BuildInfo().getErrorMsg(clazz, aobj));

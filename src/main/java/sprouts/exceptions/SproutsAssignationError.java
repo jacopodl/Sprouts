@@ -24,6 +24,25 @@
 
 package sprouts.exceptions;
 
+/***
+ * This exception is thrown by injector when trying to inject not compatible object.
+ * <br>
+ * <br>
+ * Example:
+ * <br>
+ * class Alfa
+ * <br>
+ * class Beta extends Alfa
+ * <br>
+ * class Lambda
+ * <br>
+ * <br>
+ * &#64;GetInstance
+ * <br>
+ * &#64;BindTo(className="Lambda")
+ * <br>
+ * Beta b;
+ */
 public class SproutsAssignationError extends RuntimeException {
     public SproutsAssignationError(Class base, Class clazz) {
         super(String.format("Unable to assign object! Object %s not extends object %s", clazz.getCanonicalName(), base.getCanonicalName()));

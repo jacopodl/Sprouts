@@ -24,6 +24,9 @@
 
 package sprouts.exceptions;
 
+/***
+ * This exception is thrown by injector when trying to load a non-existent class.
+ */
 public class SproutsClassNotFound extends RuntimeException {
     public SproutsClassNotFound(String msg) {
         super(msg);

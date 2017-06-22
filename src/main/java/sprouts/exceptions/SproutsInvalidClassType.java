@@ -26,6 +26,9 @@ package sprouts.exceptions;
 
 import java.lang.reflect.Modifier;
 
+/***
+ * This exception is thrown by injector when trying instantiate interface or abstract class.
+ */
 public class SproutsInvalidClassType extends RuntimeException {
     public SproutsInvalidClassType(Class clazz) {
         super(new BuildInfo().getErrorMsg(clazz));
