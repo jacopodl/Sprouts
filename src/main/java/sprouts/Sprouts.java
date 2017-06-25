@@ -39,14 +39,56 @@ import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/***
+ * The entry point to the Sprouts injector.
+ * <br>
+ * <br>
+ * Actually Sprouts injector supports these techniques:
+ * <br>
+ * <ul>
+ * <li>Field injections</li>
+ * <li>Constructor injections</li>
+ * <li>Method injections</li>
+ * </ul>
+ * <br>
+ * In order to use Sprouts you simply define your main() method, initialize Sprouts with or without Options and call
+ * getInstance(...) method like in the example below:
+ * <pre>
+ *     <code>
+ *         public class TestApp
+ *         {
+ *             public static void main(String[] args)
+ *             {
+ *                 Sprouts sprouts = new Sprouts(new SproutsSettings()
+ *                 {
+ *                     {@literal @}Override
+ *                      public void configure() {
+ *                          bind(TestIface.class).to(TestConcrete.class);
+ *                      }
+ *                 });
+ *
+ *                 //Get your first instance:
+ *                 TestIface tester = sprouts.getInstance(TestIface.class);
+ *                 tester.run();
+ *             }
+ *         }
+ *     </code>
+ * </pre>
+ */
 public class Sprouts {
     private SproutsSettings settings;
     private Map<String, Object> savedInstance;
 
+    /***
+     * Create an injector with defaults options.
+     */
     public Sprouts() {
         this(new DefaultSproutsSettings());
     }
 
+    /***
+     * Create an injector for the given set of options.
+     */
     public Sprouts(SproutsSettings settings) {
         this.savedInstance = new HashMap<>();
         this.savedInstance.put(this.getClass().getCanonicalName(), this);
@@ -229,10 +271,20 @@ public class Sprouts {
         return obj;
     }
 
+    /***
+     * Returns the appropriate instance of class 'clazz' if exists, otherwise new instance will be saved and returned.
+     * @param clazz Object class
+     * @return Instance of Class 'clazz'
+     */
     public Object getInstance(Class clazz) {
         return getInstance(clazz, false);
     }
 
+    /***
+     * Returns new instance of class 'clazz'.
+     * @param clazz Object class
+     * @return Instance of Class 'clazz'
+     */
     public Object getNewInstance(Class clazz) {
         return getInstance(clazz, true);
     }
