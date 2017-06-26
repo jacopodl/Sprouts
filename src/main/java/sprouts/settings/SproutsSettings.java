@@ -28,9 +28,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class SproutsSettings {
+    /***
+     * Allow injections on private field.
+     */
     protected boolean allowPrivateField;
+
+    /***
+     * Allow injections on private constructor.
+     */
     protected boolean allowPrivateConstructor;
+
+    /***
+     * Allow injections on private method.
+     */
     protected boolean allowPrivateMethod;
+
     private Map<String, ProviderInfo> providerMap;
 
     public SproutsSettings() {
@@ -44,6 +56,11 @@ public abstract class SproutsSettings {
         return this.providerMap.get(base.getName());
     }
 
+    /***
+     * Installs a new binding for create an object.
+     * @param clazz Base class or interface
+     * @return {@link sprouts.settings.ProviderInfo}
+     */
     public ProviderInfo bind(Class clazz) {
         ProviderInfo pInfo = new ProviderInfo(clazz);
         this.providerMap.put(clazz.getName(), pInfo);
@@ -62,6 +79,10 @@ public abstract class SproutsSettings {
         return this.allowPrivateMethod;
     }
 
-
+    /***
+     * Create a new configuration for injector.
+     * <br>
+     * <b>Don't call this method!</b>
+     */
     public abstract void configure();
 }

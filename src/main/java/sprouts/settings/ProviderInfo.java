@@ -35,11 +35,19 @@ public class ProviderInfo {
         this.override = false;
     }
 
+    /***
+     * Set the destination of binding.
+     * @param qualifier Concrete class returned by injector
+     * @return {@link sprouts.settings.ProviderInfo}
+     */
     public ProviderInfo to(Class qualifier) {
         this.qualifier = qualifier;
         return this;
     }
 
+    /***
+     * Ignore {@literal @}BindTo annotation and use this binding for create an object.
+     */
     public void withOverride() {
         this.override = true;
     }
