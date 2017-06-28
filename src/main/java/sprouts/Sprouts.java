@@ -24,11 +24,14 @@
 
 package sprouts;
 
-import sprouts.annotation.BindTo;
+import sprouts.annotation.Bind;
 import sprouts.annotation.Exposed;
 import sprouts.annotation.GetInstance;
 import sprouts.annotation.New;
-import sprouts.exceptions.*;
+import sprouts.exceptions.SproutsAccessViolation;
+import sprouts.exceptions.SproutsAssignationError;
+import sprouts.exceptions.SproutsInvalidClassType;
+import sprouts.exceptions.SproutsMultipleConstructors;
 import sprouts.settings.DefaultSproutsSettings;
 import sprouts.settings.ProviderInfo;
 import sprouts.settings.SproutsSettings;
@@ -77,7 +80,7 @@ import java.util.Map;
  */
 public class Sprouts {
     private SproutsSettings settings;
-    private Map<String, Object> savedInstance;
+    private Map<Class, Object> savedInstance;
 
     /***
      * Create an injector with defaults options.
@@ -91,17 +94,9 @@ public class Sprouts {
      */
     public Sprouts(SproutsSettings settings) {
         this.savedInstance = new HashMap<>();
-        this.savedInstance.put(this.getClass().getCanonicalName(), this);
+        this.savedInstance.put(this.getClass(), this);
         this.settings = settings;
         this.settings.configure();
-    }
-
-    private Class loadClass(String className) {
-        try {
-            return ClassLoader.getSystemClassLoader().loadClass(className);
-        } catch (ClassNotFoundException e) {
-            throw new SproutsClassNotFound(className);
-        }
     }
 
     @SuppressWarnings(value = "unchecked")
@@ -110,15 +105,15 @@ public class Sprouts {
         Object obj;
         boolean newInstance = ae.isAnnotationPresent(New.class);
 
-        iClass = loadClass(getQualifier(clazz, ae.getAnnotation(BindTo.class)));
+        iClass = getQualifier(clazz, ae.getAnnotation(Bind.class));
 
         if (!clazz.isAssignableFrom(iClass))
             throw new SproutsAssignationError(clazz, iClass);
 
         if (!newInstance) {
             synchronized (this) {
-                if (this.savedInstance.containsKey(iClass.getCanonicalName()))
-                    return this.savedInstance.get(iClass.getCanonicalName());
+                if (this.savedInstance.containsKey(iClass))
+                    return this.savedInstance.get(iClass);
             }
         }
 
@@ -135,7 +130,7 @@ public class Sprouts {
             return obj;
 
         synchronized (this) {
-            this.savedInstance.put(iClass.getCanonicalName(), obj);
+            this.savedInstance.put(iClass, obj);
         }
         return obj;
     }
@@ -212,7 +207,7 @@ public class Sprouts {
         return !aobj.isAnnotationPresent(Exposed.class) && ((Modifier.isPrivate(member.getModifiers()) || Modifier.isProtected(member.getModifiers())) && !permission);
     }
 
-    private String getQualifier(Class clazz, BindTo bw) {
+    private Class getQualifier(Class clazz, Bind bw) {
         ProviderInfo info = null;
 
         if (this.settings != null)
@@ -220,14 +215,14 @@ public class Sprouts {
 
         if (bw == null) {
             if (info != null)
-                return info.getQualifier().getCanonicalName();
+                return info.getQualifier();
             else
-                return clazz.getCanonicalName();
+                return clazz;
         }
 
         if (info != null && info.getOverride())
-            return info.getQualifier().getCanonicalName();
-        return bw.className();
+            return info.getQualifier();
+        return bw.toClass();
     }
 
     private void fieldInjector(Object obj, Class clazz) {

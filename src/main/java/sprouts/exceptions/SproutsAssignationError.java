@@ -39,7 +39,7 @@ package sprouts.exceptions;
  * <br>
  * &#64;GetInstance
  * <br>
- * &#64;BindTo(className="Lambda")
+ * &#64;Bind(toClass=Lambda.class)
  * <br>
  * Beta b;
  */

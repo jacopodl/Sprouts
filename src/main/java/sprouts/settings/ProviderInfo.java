@@ -46,7 +46,7 @@ public class ProviderInfo {
     }
 
     /***
-     * Ignore {@literal @}BindTo annotation and use this binding for create an object.
+     * Ignore {@literal @}Bind annotation and use this binding for create an object.
      */
     public void withOverride() {
         this.override = true;

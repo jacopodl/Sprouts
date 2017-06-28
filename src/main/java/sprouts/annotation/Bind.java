@@ -34,18 +34,18 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.PARAMETER})
-public @interface BindTo {
+public @interface Bind {
     /***
-     * Specify class name.
+     * Specify class.
      * <br>
      * <br>
      * Eg:
      * <br>
      * &#64;GetInstance
      * <br>
-     * &#64;BindTo(className="LambdaSensor")
+     * &#64;Bind(toClass = LambdaSensor.class)
      * <br>
      * private GenericSensor sensor;
      */
-    String className();
+    Class toClass();
 }
