@@ -18,22 +18,64 @@ Actually Sprouts implements this features:
 2. Download Sprouts from this repository and compile your own .jar library.
 3. Download compiled .jar file from the release page.
 
-## Simple example ##
+## Quick tour ##
 
+### Write your classes ###
 
+When your class needs an instance of another class, simply annotate with `@GetInstance` annotation the class field.
 ```
 #!java
 
-public class MainApp
+public class TemperatureSensor
+{
+	private boolean status;
+
+	public TemperatureSensor() {
+		this.status = true;
+	}
+
+	public boolean isEnabled() {
+		return this.status;
+	}
+
+	public float readTemp() {
+		return ...;
+	}
+
+	public void disable() {
+		this.status = false;
+	}
+
+	public void enable() {
+		this.status = true;
+	}
+}
+
+public class SensorsBox
+{
+	@GetInstance
+	@Exposed
+	private TemperatureSensor tSens;
+
+	public publishData() {
+		publish(this.tSens.readTemp())
+	}
+}
+
+```
+### Main app ###
+```
+#!java
+
+public class MagicSensorApp
 {
 	public static void main(String[] args)
 	{
-		Sprouts srpouts = new Sprouts(new SproutsSettings()
-		{
-			public void configure(){
-				bind(...).to(...);
-			}
-		})
+		Sprouts srpouts = new Sprouts();
+		SensorsBox sensBox = sprouts.getInstance();
+		...
+		sensBox.publishData();
+		...
 	}
 }
 ```
