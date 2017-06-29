@@ -11,6 +11,7 @@ Actually Sprouts implements this features:
 * Method injection
 
 # How to use #
+______________
 
 ## Add library to your project ##
 
@@ -72,10 +73,37 @@ public class MagicSensorApp
 	public static void main(String[] args)
 	{
 		Sprouts srpouts = new Sprouts();
-		SensorsBox sensBox = sprouts.getInstance();
+		SensorsBox sensBox = (SensorsBox) sprouts.getInstance();
 		...
 		sensBox.publishData();
 		...
 	}
 }
 ```
+
+# Circular Dependencies #
+_________________________
+
+Creating circular dependencies is generally a bad idea and Sprouts doesn't support these operation.
+
+If you try to create the following sitution:
+
+```
+#!java
+
+public class Alpha {
+	@GetInstance
+	Beta beta;
+}
+
+public class Beta {
+	@GetInstance
+	Gamma gamma;
+}
+
+public class Gamma {
+	@GetInstance
+	Alpha alpha;
+}
+```
+your program going to crash with java.lang.StackOverflowError exception, in this case please fix your dependencies graph to avoid this!
