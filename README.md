@@ -14,10 +14,9 @@ Actually Sprouts implements this features:
 ______________
 
 ## Add library to your project ##
-
-1. If you use a build-system like Gradle, Sprouts is available in the Maven Central Repository.
-2. Download Sprouts from this repository and compile your own .jar library.
-3. Download compiled .jar file from the release page.
+[comment]: (1. If you use a build-system like Gradle, Sprouts is available in the Maven Central Repository.)
+1. Download Sprouts from this repository and compile your own .jar library.
+1. Download compiled .jar file from the release page.
 
 ## Quick tour ##
 
