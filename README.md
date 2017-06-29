@@ -106,4 +106,4 @@ public class Gamma {
 	Alpha alpha;
 }
 ```
-your program going to crash with java.lang.StackOverflowError exception, in this case please fix your dependencies graph to avoid this!
+your program going to crash with `java.lang.StackOverflowError` exception, in this case please fix your dependencies graph to avoid this!
