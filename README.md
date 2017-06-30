@@ -57,8 +57,8 @@ public class SensorsBox
 	@Exposed
 	private TemperatureSensor tSens;
 
-	public publishData() {
-		publish(this.tSens.readTemp())
+	public void publishData() {
+		publish(this.tSens.readTemp());
 	}
 }
 
