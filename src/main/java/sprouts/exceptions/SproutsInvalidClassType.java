@@ -40,7 +40,7 @@ public class SproutsInvalidClassType extends RuntimeException {
 
             if (Modifier.isAbstract(clazz.getModifiers()))
                 type = "abstract";
-            else if (Modifier.isInterface(clazz.getModifiers()))
+            if (Modifier.isInterface(clazz.getModifiers()))
                 type = "interface";
 
             return String.format("Unable to build object from class %s because this class is %s.", clazz.getCanonicalName(), type);
