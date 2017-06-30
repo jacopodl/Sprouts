@@ -1,8 +1,6 @@
 # Sprouts #
-Fast and lightway dependency injector (DI) for Java projects.
-______________________________________________________________
 
-Sprouts is designed for projects thaht don't need a extremely powerfull DI.
+Sprouts is designed for projects that don't need a extremely complex DI.
 
 Actually Sprouts implements this features:
 
@@ -11,10 +9,8 @@ Actually Sprouts implements this features:
 * Method injection
 
 # How to use #
-______________
 
 ## Add library to your project ##
-[comment]: (1. If you use a build-system like Gradle, Sprouts is available in the Maven Central Repository.)
 1. Download Sprouts from this repository and compile your own .jar library.
 1. Download compiled .jar file from the release page.
 
@@ -79,7 +75,6 @@ public class MagicSensorApp
 ```
 
 # Circular Dependencies #
-_________________________
 
 Creating circular dependencies is generally a bad idea and Sprouts doesn't support these operation.
 
