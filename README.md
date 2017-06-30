@@ -12,7 +12,7 @@ Actually Sprouts implements this features:
 
 ## Add library to your project ##
 1. Download Sprouts from this repository and compile your own .jar library.
-1. Download compiled .jar file from the release page.
+1. Download compiled .jar file from the [release](https://github.com/jacopodl/Sprouts/releases/) page.
 
 ## Quick tour ##
 
