@@ -1,3 +1,4 @@
+![](https://travis-ci.org/jacopodl/Sprouts.svg?branch=master)
 # Sprouts #
 
 Sprouts is designed for projects that don't need a extremely complex DI.
