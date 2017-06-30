@@ -23,8 +23,7 @@ ______________
 ### Write your classes ###
 
 When your class needs an instance of another class, simply annotate with `@GetInstance` annotation the class field.
-```
-#!java
+```java
 
 public class TemperatureSensor
 {
@@ -64,8 +63,7 @@ public class SensorsBox
 
 ```
 ### Main app ###
-```
-#!java
+```java
 
 public class MagicSensorApp
 {
@@ -87,8 +85,7 @@ Creating circular dependencies is generally a bad idea and Sprouts doesn't suppo
 
 If you try to create the following sitution:
 
-```
-#!java
+```java
 
 public class Alpha {
 	@GetInstance
